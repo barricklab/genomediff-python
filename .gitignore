@@ -54,3 +54,4 @@ docs/_build/
 
 # JetBrains
 .idea
+.DS_Store
