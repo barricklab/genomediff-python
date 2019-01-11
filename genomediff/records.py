@@ -32,12 +32,11 @@ class Record(object):
             raise AttributeError
 
 
-def __repr__(self):
-    return "Record('{}', {}, {}, {})".format(self.type,
+    def __repr__(self):
+        return "Record('{}', {}, {}, {})".format(self.type,
                                              self.id,
                                              self.parent_ids,
-                                             ', '.join('{}={}'.format(k, repr(v)) for k, v in self._extra.items()))
+                                             ', '.join('{}={}'.format(k, repr(v)) for k, v in self.attributes.items()))
 
-
-def __eq__(self, other):
-    return self.__dict__ == other.__dict__
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
