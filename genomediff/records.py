@@ -38,5 +38,11 @@ class Record(object):
                                              self.parent_ids,
                                              ', '.join('{}={}'.format(k, repr(v)) for k, v in self.attributes.items()))
 
+    
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        ''' this definition allows identical mutations in different genome diffs
+            to be equal.'''
+        return self.type == other.type and self.attributes == other.attributes
+
+    def __ne__(self, other):
+        return not self.__eq__(other)

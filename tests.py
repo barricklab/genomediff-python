@@ -88,6 +88,65 @@ RA	2		NC_000913	223	0	G	A
         document = GenomeDiff.read(file)
         self.assertEqual(document[1].parents, [document[2]])
 
+class RecordComparisonTestCase(TestCase):
+    def test_cmp1(self):
+        file1 = StringIO("""
+#=GENOME_DIFF	1.0
+#=CREATED	20:02:17 23 Jan 2019
+#=PROGRAM	breseq 0.33.2 
+#=COMMAND	breseq -r LCA.gff3 sequence-data/DM0 evolved re-runs (Rohan)/ZDBp889_R1.fastq.gz sequence-data/DM0 evolved re-runs (Rohan)/ZDBp889_R2.fastq.gz sequence-data/ZDBp889_reads.fastq -o consensus/ZDBp889
+#=REFSEQ	LCA.gff3
+#=READSEQ	sequence-data/DM0 evolved re-runs (Rohan)/ZDBp889_R1.fastq.gz
+#=READSEQ	sequence-data/DM0 evolved re-runs (Rohan)/ZDBp889_R2.fastq.gz
+#=READSEQ	sequence-data/ZDBp889_reads.fastq
+#=CONVERTED-BASES	644779377
+#=CONVERTED-READS	14448149
+#=INPUT-BASES	645034321
+#=INPUT-READS	14455411
+#=MAPPED-BASES	602854657
+#=MAPPED-READS	13788351
+SNP	1	34	REL606	72313	C
+        """.strip())
 
+        document1 = GenomeDiff.read(file1)
+        
+        file2 = StringIO("""
+#=GENOME_DIFF	1.0
+#=CREATED	16:49:49 23 Jan 2019
+#=PROGRAM	breseq 0.33.2 
+#=COMMAND	breseq -r LCA.gff3 sequence-data/DM0 evolved re-runs (Rohan)/ZDB67_R1.fastq.gz sequence-data/DM0 evolved re-runs (Rohan)/ZDB67_R2.fastq.gz -o consensus/ZDB67
+#=REFSEQ	LCA.gff3
+#=READSEQ	sequence-data/DM0 evolved re-runs (Rohan)/ZDB67_R1.fastq.gz
+#=READSEQ	sequence-data/DM0 evolved re-runs (Rohan)/ZDB67_R2.fastq.gz
+#=CONVERTED-BASES	114566968
+#=CONVERTED-READS	419781
+#=INPUT-BASES	114567554
+#=INPUT-READS	419783
+#=MAPPED-BASES	92472620
+#=MAPPED-READS	339813
+SNP	1	12	REL606	72313	C
+        """.strip())
+
+        document2 = GenomeDiff.read(file2)
+        self.assertEqual(document1.mutations,document2.mutations)
+
+
+    def test_cmp2(self):
+        file1 = StringIO("""
+#=GENOME_DIFF	1.0
+SNP	1	12	REL606	72313	C	aa_new_seq=G	aa_position=92	aa_ref_seq=D	codon_new_seq=GGC	codon_number=92	codon_position=2	codon_ref_seq=GAC	gene_name=araA	gene_position=275	gene_product=L-arabinose isomerase	gene_strand=<	genes_overlapping=araA	locus_tag=ECB_00064	locus_tags_overlapping=ECB_00064	mutation_category=snp_nonsynonymous	position_end=72313	position_start=72313	snp_type=nonsynonymous	transl_table=11
+        """.strip())
+
+        document1 = GenomeDiff.read(file1)
+        
+        file2 = StringIO("""
+#=GENOME_DIFF	1.0
+SNP	1	34	REL606	72313	C	aa_new_seq=G	aa_position=92	aa_ref_seq=D	codon_new_seq=GGC	codon_number=92	codon_position=2	codon_ref_seq=GAC	gene_name=araA	gene_position=275	gene_product=L-arabinose isomerase	gene_strand=<	genes_overlapping=araA	locus_tag=ECB_00064	locus_tags_overlapping=ECB_00064	mutation_category=snp_nonsynonymous	position_end=72313	position_start=72313	snp_type=nonsynonymous	transl_table=11
+        """.strip())
+
+        document2 = GenomeDiff.read(file2)
+        self.assertEqual(document1.mutations,document2.mutations)
+
+        
 if __name__ == '__main__':
     main()
