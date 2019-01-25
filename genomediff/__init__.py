@@ -40,3 +40,7 @@ class GenomeDiff(object):
 
     def __iter__(self):
         return itertools.chain(self.mutations, self.evidence, self.validation)
+
+    #def __str__(self):
+    #    return '\n'.join([self.mutations,self.evidence,self.validation])
+
