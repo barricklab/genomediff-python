@@ -41,6 +41,33 @@ class GenomeDiff(object):
     def __iter__(self):
         return itertools.chain(self.mutations, self.evidence, self.validation)
 
+<<<<<<< HEAD
+    def __str__(self):
+        return '\n'.join(["MUTATIONS:",'\n'.join([str(x) for x in self.mutations]),
+                          "EVIDENCE:",'\n'.join([str(x) for x in self.evidence]),
+                          "VALIDATION:",'\n'.join(self.validation)])
+
+
+    def remove(self,*args, mut_type=None):
+        ''' 
+        Remove mutations that satisfy the given conditions. Implementation of
+        gdtools REMOVE for genomediff objects.
+        
+        Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
+               If mut_type is specified, only that mutation type will be removed.
+        Output: self.mutations is updated, with mutations satifying the conditions
+                having been removed.
+        '''
+        updated_mutations = []
+        for rec in self.mutations:
+            if (mut_type is None or mut_type == rec.type) and rec.satisfies(*args):
+                continue       
+            else:
+                updated_mutations.append(rec)
+
+        self.mutations = updated_mutations
+=======
     #def __str__(self):
     #    return '\n'.join([self.mutations,self.evidence,self.validation])
 
+>>>>>>> d98f95e89b46227d188c372219531e73daa8b852

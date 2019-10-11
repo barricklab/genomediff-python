@@ -1,3 +1,5 @@
+import re
+
 class Metadata(object):
     def __init__(self, name, value):
         self.name = name
@@ -38,6 +40,12 @@ class Record(object):
                                              self.parent_ids,
                                              ', '.join('{}={}'.format(k, repr(v)) for k, v in self.attributes.items()))
 
+<<<<<<< HEAD
+    def __str__(self):
+        return self.__repr__()
+
+=======
+>>>>>>> d98f95e89b46227d188c372219531e73daa8b852
     
     def __eq__(self, other):
         ''' this definition allows identical mutations in different genome diffs
@@ -46,3 +54,51 @@ class Record(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+<<<<<<< HEAD
+
+    def satisfies(self, *args):
+        '''
+        Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
+        Output: return true if all conditions are true (i.e. correspond to key-values in attributes.
+
+        Find a condition that evaluates to false, otherwise return True.
+        '''
+
+        ## helper function to check if values are numbers
+        def is_number(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+        
+        for c in args:
+            assert type(c) == str, "error: supplied condition is not a string."
+            condition_pattern = re.compile(r'^(?P<key>[_a-z]+)'
+                                            '(?P<comp>==|!=|<|<=|>|>=)'
+                                            '(?P<val>[-_a-zA-Z0-9\.]+)')
+            condition_match = condition_pattern.match(c)
+            assert condition_match, "the supplied condition\n"+c+"\n could not be parsed."
+            cond_key = condition_match.group('key')
+            cond_comp = condition_match.group('comp')
+            cond_val = condition_match.group('val')
+
+            try: ## in case the given condition is not in the attributes.
+                attribute_val = self.attributes[cond_key]
+            except:
+                continue
+            
+            ## add quote marks around strings before eval. can leave numbers alone.
+            if not is_number(cond_val):
+                cond_val = "\'"+cond_val+"\'"
+
+            if not is_number(attribute_val):
+                attribute_val = "\'"+attribute_val+"\'"
+            else: ## attribute_val is a number in this record-- convert to str for eval.
+                attribute_val = str(attribute_val)
+            expr = attribute_val+cond_comp+cond_val
+            if not eval(expr):
+                return False
+        return True
+=======
+>>>>>>> d98f95e89b46227d188c372219531e73daa8b852
