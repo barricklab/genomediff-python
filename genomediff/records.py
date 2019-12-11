@@ -40,13 +40,9 @@ class Record(object):
                                              self.parent_ids,
                                              ', '.join('{}={}'.format(k, repr(v)) for k, v in self.attributes.items()))
 
-<<<<<<< HEAD
     def __str__(self):
         return self.__repr__()
 
-=======
->>>>>>> d98f95e89b46227d188c372219531e73daa8b852
-    
     def __eq__(self, other):
         ''' this definition allows identical mutations in different genome diffs
             to be equal.'''
@@ -54,7 +50,6 @@ class Record(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-<<<<<<< HEAD
 
     def satisfies(self, *args):
         '''
@@ -71,7 +66,7 @@ class Record(object):
                 return True
             except ValueError:
                 return False
-        
+
         for c in args:
             assert type(c) == str, "error: supplied condition is not a string."
             condition_pattern = re.compile(r'^(?P<key>[_a-z]+)'
@@ -87,7 +82,7 @@ class Record(object):
                 attribute_val = self.attributes[cond_key]
             except:
                 continue
-            
+
             ## add quote marks around strings before eval. can leave numbers alone.
             if not is_number(cond_val):
                 cond_val = "\'"+cond_val+"\'"
@@ -100,5 +95,3 @@ class Record(object):
             if not eval(expr):
                 return False
         return True
-=======
->>>>>>> d98f95e89b46227d188c372219531e73daa8b852
