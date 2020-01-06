@@ -11,7 +11,7 @@ Installation
 ------------
 
 ::
-    
+
     pip3 install genomediff
 
 
@@ -21,7 +21,7 @@ Usage
 -----
 
 GenomeDiff files are read using ``GenomeDiff.read(file)``. The ``GenomeDiff`` object contains a ``metadata`` dict with
-the meta data, as well as ``mutations``, ``evidence`` and ``validation`` lists—each containing records of that type.
+the metadata, as well as ``mutations``, ``evidence`` and ``validation`` lists—each containing records of that type.
 Records can be accessed through this list or by id. ``GenomeDiff`` is iterable and iterating will return all records of all types.
 
 ::
@@ -34,15 +34,15 @@ Records can be accessed through this list or by id. ``GenomeDiff`` is iterable a
     Record('SNP', 1, [191], new_seq='A', seq_id='NC_000913', snp_type='intergenic',  position=12346)
     >>> document.mutations[0].parent_ids
     [191]
-    >>> document[191]         
+    >>> document[191]
     Record('RA', 191, None, tot_cov='46/42', new_base='A', insert_position=0, ref_base='G', seq_id='NC_000913', quality=252.9, position=12345)
     >>> document.mutations[0].parents
     [Record('RA', 191, None, tot_cov='46/42', new_base='A', insert_position=0, ref_base='G', seq_id='NC_000913', quality=252.9, position=12345)]
+    >>> document.write(open('NewDiff.gd', 'w', encoding='utf-8'))
 
 Contribution
 ------------
 
 Contribution to this project is welcomed. Wishlist:
 
-- Writing GD files
 - Python 2.x support

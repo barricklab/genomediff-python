@@ -1,37 +1,6 @@
 from collections import OrderedDict
 import re
-from genomediff.records import Metadata, Record
-
-
-TYPE_SPECIFIC_FIELDS = {
-    'SNP': ('seq_id', 'position', 'new_seq'),
-    'SUB': ('seq_id', 'position', 'size', 'new_seq'),
-    'DEL': ('seq_id', 'position', 'size'),
-    'INS': ('seq_id', 'position', 'new_seq'),
-    'MOB': ('seq_id', 'position', 'repeat_name', 'strand', 'duplication_size'),
-    'AMP': ('seq_id', 'position', 'size', 'new_copy_number'),
-    'CON': ('seq_id', 'position', 'size', 'region'),
-    'INV': ('seq_id', 'position', 'size'),
-    'RA': ('seq_id', 'position', 'insert_position', 'ref_base', 'new_base'),
-    'MC': ('seq_id', 'start', 'end', 'start_range', 'end_range'),
-    'JC': ('side_1_seq_id',
-           'side_1_position',
-           'side_1_strand',
-           'side_2_seq_id',
-           'side_2_position',
-           'side_2_strand',
-           'overlap'),
-    'CN': ('seq_id', 'start', 'end', 'copy_number'),
-    'UN': ('seq_id', 'start', 'end'),
-    'CURA': ('expert',),
-    'FPOS': ('expert',),
-    'PHYL': ('gd',),
-    'TSEQ': ('seq_id', 'primer1_start', 'primer1_end', 'primer2_start', 'primer2_end'),
-    'PFLP': ('seq_id', 'primer1_start', 'primer1_end', 'primer2_start', 'primer2_end'),
-    'RFLP': ('seq_id', 'primer1_start', 'primer1_end', 'primer2_start', 'primer2_end', 'enzyme'),
-    'PFGE': ('seq_id', 'restriction_enzyme'),
-    'NOTE': ('note',),
-}
+from genomediff.records import TYPE_SPECIFIC_FIELDS, Metadata, Record
 
 class GenomeDiffParser(object):
     def __init__(self, fsock=None, document=None):

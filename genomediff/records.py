@@ -1,5 +1,40 @@
 import re
 
+#########
+## Fields should be kept synced with genomediff.cpp in the breseq source code
+
+TYPE_SPECIFIC_FIELDS = {
+    'SNP': ('seq_id', 'position', 'new_seq'),
+    'SUB': ('seq_id', 'position', 'size', 'new_seq'),
+    'DEL': ('seq_id', 'position', 'size'),
+    'INS': ('seq_id', 'position', 'new_seq'),
+    'MOB': ('seq_id', 'position', 'repeat_name', 'strand', 'duplication_size'),
+    'AMP': ('seq_id', 'position', 'size', 'new_copy_number'),
+    'CON': ('seq_id', 'position', 'size', 'region'),
+    'INV': ('seq_id', 'position', 'size'),
+    'RA': ('seq_id', 'position', 'insert_position', 'ref_base', 'new_base'),
+    'MC': ('seq_id', 'start', 'end', 'start_range', 'end_range'),
+    'JC': ('side_1_seq_id',
+           'side_1_position',
+           'side_1_strand',
+           'side_2_seq_id',
+           'side_2_position',
+           'side_2_strand',
+           'overlap'),
+    'CN': ('seq_id', 'start', 'end', 'copy_number'),
+    'UN': ('seq_id', 'start', 'end'),
+    'CURA': ('expert',),
+    'FPOS': ('expert',),
+    'PHYL': ('gd',),
+    'TSEQ': ('seq_id', 'primer1_start', 'primer1_end', 'primer2_start', 'primer2_end'),
+    'PFLP': ('seq_id', 'primer1_start', 'primer1_end', 'primer2_start', 'primer2_end'),
+    'RFLP': ('seq_id', 'primer1_start', 'primer1_end', 'primer2_start', 'primer2_end', 'enzyme'),
+    'PFGE': ('seq_id', 'restriction_enzyme'),
+    'NOTE': ('note',),
+}
+
+#########
+
 class Metadata(object):
     def __init__(self, name, value):
         self.name = name
@@ -8,8 +43,12 @@ class Metadata(object):
     def __repr__(self):
         return "Metadata({}, {})".format(repr(self.name), repr(self.value))
 
+    def __str__(self, other):
+        return "#={}\t{}".format(repr(self.name), repr(self.value))
+
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
+
 
 
 class Record(object):
@@ -41,7 +80,29 @@ class Record(object):
                                              ', '.join('{}={}'.format(k, repr(v)) for k, v in self.attributes.items()))
 
     def __str__(self):
-        return self.__repr__()
+
+        parent_id_str='.'
+        if not self.parent_ids is None:
+          parent_id_str = ','.join(str(v) for v in self.parent_ids)
+
+        ## Extract fields that are required (don't have field=value)
+        remaining_items = self.attributes
+        type_fields_key_list = TYPE_SPECIFIC_FIELDS[self.type]
+        type_fields_list = []
+        for type_field_key in type_fields_key_list:
+          type_fields_list.append(str(self.attributes[type_field_key]))
+          del remaining_items[type_field_key]
+        type_fields_str = '\t'.join(type_fields_list)
+
+        ## Remaining are printed as field=value
+        attribute_str = '\t'.join('{}={}'.format(k, str(v)) for k, v in remaining_items.items())
+
+        return '\t'.join([self.type,
+                         str(self.id),
+                         parent_id_str,
+                         type_fields_str,
+                         attribute_str
+                         ])
 
     def __eq__(self, other):
         ''' this definition allows identical mutations in different genome diffs

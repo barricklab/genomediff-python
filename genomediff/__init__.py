@@ -33,7 +33,13 @@ class GenomeDiff(object):
         return self._index[item]
 
     def write(self, fsock):
-        raise NotImplementedError()
+        #Print our own version line first and ignore any in the metadata
+        print("#=GENOME_DIFF\t1.0", file = fsock)
+        for k, v in self.metadata.items():
+          if k != "GENOME_DIFF":
+            print("#={}\t{}".format(k, v), file = fsock)
+        for record in itertools.chain(self.mutations, self.evidence, self.validation):
+          print(str(record), file = fsock)
 
     def __len__(self):
         return len(self.mutations) + len(self.evidence) + len(self.validation)
