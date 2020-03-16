@@ -86,7 +86,7 @@ class Record(object):
           parent_id_str = ','.join(str(v) for v in self.parent_ids)
 
         ## Extract fields that are required (don't have field=value)
-        remaining_items = self.attributes
+        remaining_items = self.attributes.copy()
         type_fields_key_list = TYPE_SPECIFIC_FIELDS[self.type]
         type_fields_list = []
         for type_field_key in type_fields_key_list:
