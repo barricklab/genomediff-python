@@ -12,7 +12,7 @@ Installation
 
 ::
 
-    pip3 install genomediff
+    python setup.py install.
 
 
 Only Python 3.x is tested.
@@ -39,10 +39,3 @@ Records can be accessed through this list or by id. ``GenomeDiff`` is iterable a
     >>> document.mutations[0].parents
     [Record('RA', 191, None, tot_cov='46/42', new_base='A', insert_position=0, ref_base='G', seq_id='NC_000913', quality=252.9, position=12345)]
     >>> document.write(open('NewDiff.gd', 'w', encoding='utf-8'))
-
-Contribution
-------------
-
-Contribution to this project is welcomed. Wishlist:
-
-- Python 2.x support
