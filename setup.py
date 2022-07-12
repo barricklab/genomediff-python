@@ -1,14 +1,15 @@
 from distutils.core import setup
 
 setup(
-    name='genomediff',
-    version='0.3.2',
+    name='genomediff2',
+    version='0.3.3',
     packages=['genomediff'],
     url='https://github.com/biosustain/genomediff-python.git',
     license='MIT',
     author='Lars Schoening',
     author_email='lays@biosustain.dtu.dk',
     description='GenomeDiff (*.gd) file reader',
+    long_description='GenomeDiff file reader',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Other Environment',
