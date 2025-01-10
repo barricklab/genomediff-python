@@ -1,73 +1,76 @@
-import itertools
-from genomediff.parser import GenomeDiffParser
-from genomediff.records import Metadata
+# -*- coding: utf-8 -*-
+"""
+ * @Date: 2024-12-27 17:48:21
+ * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
+ * @LastEditTime: 2025-01-10 21:40:56
+ * @FilePath: /pymummer/genomediff/__init__.py
+ * @Description:
+ modified from https://github.com/biosustain/genomediff-python
+"""
+# """
+from pathlib import Path
+from typing import TextIO
+
+from .parser import Metadata, MetadataContainer, load_json_ref_cov, parse
+from .records import RecordCollection
 
 
-class GenomeDiff(object):
+class GenomeDiff:
+    def __init__(
+        self,
+        metadata: MetadataContainer,
+        records: RecordCollection,
+        comments: dict[int, str] | None = None,
+    ):
+        self._metadata = metadata
+        self._records = records
+        self._comments = comments if comments else {}
 
-    def __init__(self):
-        self.metadata = {}
-        self.mutations = []
-        self.evidence = []
-        self.validation = []
-        self._index = {}
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @property
+    def records(self):
+        return self._records
 
     @classmethod
-    def read(cls, fsock):
-        gd = GenomeDiff()
-
-        for record in GenomeDiffParser(document=gd, fsock=fsock):
+    def read(cls, gdfile: str | Path | TextIO):
+        records = RecordCollection.new()
+        comments: dict[int, str] = {}
+        if hasattr(gdfile, "read"):
+            metadata = MetadataContainer(getattr(gdfile, "name", ""))
+            fsock: TextIO = gdfile  # type: ignore[assignment]
+        else:
+            metadata = MetadataContainer(gdfile)
+            fsock = open(gdfile, "r")
+        for i, record in parse(fsock):
             if isinstance(record, Metadata):
-                gd.metadata[record.name] = record.value
+                metadata.set(record.name, record.value)
+            elif isinstance(record, str):
+                comments[i] = record
             else:
-                if len(record.type) == 3:
-                    gd.mutations.append(record)
-                if len(record.type) == 2:
-                    gd.evidence.append(record)
-                if len(record.type) == 4:
-                    gd.validation.append(record)
-                gd._index[record.id] = record
-        return gd
-
-    def __getitem__(self, item):
-        return self._index[item]
+                records.set(record)
+        if not hasattr(gdfile, "read"):
+            fsock.close()
+        return cls(metadata, records, comments)
 
     def write(self, fsock):
-        #Print our own version line first and ignore any in the metadata
-        print("#=GENOME_DIFF\t1.0", file = fsock)
-        for k, v in self.metadata.items():
-          if k != "GENOME_DIFF":
-            print("#={}\t{}".format(k, v), file = fsock)
-        for record in itertools.chain(self.mutations, self.evidence, self.validation):
-          print(str(record), file = fsock)
+        raise NotImplementedError()
 
-    def __len__(self):
-        return len(self.mutations) + len(self.evidence) + len(self.validation)
+    @property
+    def cov_summary(self):
+        if outdir := self.metadata.output:
+            return load_json_ref_cov(outdir)
+        raise AttributeError("No output directory found in metadata")
 
-    def __iter__(self):
-        return itertools.chain(self.mutations, self.evidence, self.validation)
+    @property
+    def mutations(self):
+        return list(self.records.mutation)
 
-    def __str__(self):
-        return '\n'.join(["MUTATIONS:",'\n'.join([str(x) for x in self.mutations]),
-                          "EVIDENCE:",'\n'.join([str(x) for x in self.evidence]),
-                          "VALIDATION:",'\n'.join(self.validation)])
+    @property
+    def evidence(self):
+        return list(self.records.evidence)
 
-
-    def remove(self,*args, mut_type=None):
-        '''
-        Remove mutations that satisfy the given conditions. Implementation of
-        gdtools REMOVE for genomediff objects.
-
-        Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
-               If mut_type is specified, only that mutation type will be removed.
-        Output: self.mutations is updated, with mutations satifying the conditions
-                having been removed.
-        '''
-        updated_mutations = []
-        for rec in self.mutations:
-            if (mut_type is None or mut_type == rec.type) and rec.satisfies(*args):
-                continue
-            else:
-                updated_mutations.append(rec)
-
-        self.mutations = updated_mutations
+    def __getitem__(self, key):
+        return self.records[key]
