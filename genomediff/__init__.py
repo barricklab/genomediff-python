@@ -2,7 +2,7 @@
 """
  * @Date: 2024-12-27 17:48:21
  * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-01-10 21:40:56
+ * @LastEditTime: 2025-01-10 22:02:13
  * @FilePath: /pymummer/genomediff/__init__.py
  * @Description:
  modified from https://github.com/biosustain/genomediff-python
@@ -56,7 +56,10 @@ class GenomeDiff:
         return cls(metadata, records, comments)
 
     def write(self, fsock):
-        raise NotImplementedError()
+        for l in self.metadata.lines:
+            print(l, file=fsock)
+        for record in self.records:
+            print(str(record), file=fsock)
 
     @property
     def cov_summary(self):
@@ -71,6 +74,10 @@ class GenomeDiff:
     @property
     def evidence(self):
         return list(self.records.evidence)
+
+    @property
+    def validation(self):
+        return list(self.records.validation)
 
     def __getitem__(self, key):
         return self.records[key]

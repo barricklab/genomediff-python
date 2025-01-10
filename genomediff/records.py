@@ -2,7 +2,7 @@
 """
  * @Date: 2024-12-27 17:50:21
  * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-01-10 21:41:15
+ * @LastEditTime: 2025-01-10 22:23:34
  * @FilePath: /pymummer/genomediff/records.py
  * @Description:
 """
@@ -16,6 +16,9 @@ from typing import Final, Iterable, Literal, NamedTuple
 from git import TYPE_CHECKING
 
 STRAND_MAPPING_PATTERN: Final = re.compile(r"^(\d+)/(\d+)$")
+CONDITION_PATTERN = re.compile(
+    r"^(?P<key>[_a-z]+)" "(?P<comp>==|!=|<|<=|>|>=)" "(?P<val>[-_a-zA-Z0-9\.]+)"
+)
 
 
 class ReadEvidenceStrand(NamedTuple):
@@ -147,6 +150,42 @@ class DataAbstract(metaclass=DataMeta):
     def __lt__(self, other):
         if isinstance(other, self.__class__):
             return self <= other and self != other
+
+    def satisfies(self, *args: str):
+        """
+        Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
+        Output: return true if all conditions are true (i.e. correspond to key-values in attributes.
+
+        Find a condition that evaluates to false, otherwise return True.
+        """
+
+        ## helper function to check if values are numbers
+        def is_number(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+
+        for c in args:
+            condition_match = CONDITION_PATTERN.match(c)
+            assert condition_match, (
+                "the supplied condition\n" + c + "\n could not be parsed."
+            )
+            cond_key = condition_match.group("key")
+            cond_comp = condition_match.group("comp")
+            cond_val = condition_match.group("val")
+
+            if cond_key in self.DataItem._fields:
+                attribute_val = getattr(self.dataitem, cond_key)
+            elif cond_key in self.extra:
+                attribute_val = self.extra[cond_key]
+            else:
+                continue
+
+            if not eval(f"'{attribute_val}' {cond_comp} '{cond_val}'"):
+                return False
+        return True
 
 
 # fmt: off
@@ -466,3 +505,27 @@ class RecordCollection:
 
     def __iter__(self):
         return (i for j in (self.mutation, self.evidence, self.validation) for i in j)
+
+    def remove(self, *args: str, mut_type=None | str):
+        """
+        Remove mutations that satisfy the given conditions. Implementation of
+        gdtools REMOVE for genomediff objects.
+
+        Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
+               If mut_type is specified, only that mutation type will be removed.
+        Output: self.mutations is updated, with mutations satifying the conditions
+                having been removed.
+        """
+        if mut_type is None:
+            for mut_type in DATA2RECORD["mutation"]:
+                self.remove(*args, mut_type=mut_type)
+        else:
+            rec: DataMutationAbs
+            assert mut_type in DATA2RECORD["mutation"]
+            updated_mutations = []
+            for rec in getattr(self, mut_type):
+                if rec.satisfies(*args):
+                    self.unindex.setdefault(rec.id, []).append(self.index.pop(rec.id))
+                else:
+                    updated_mutations.append(rec)
+            setattr(self, mut_type, updated_mutations)

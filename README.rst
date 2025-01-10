@@ -12,7 +12,7 @@ Installation
 
 ::
 
-    python setup.py install
+    pip install git+https://github.com/Hocnonsense/genomediff-python.git@gd0.4.0
 
 
 Only Python 3.x is tested.
@@ -27,15 +27,15 @@ Records can be accessed through this list or by id. ``GenomeDiff`` is iterable a
 ::
 
     >>> from genomediff import *
-    >>> document = GenomeDiff.read(open('MyDiff.gd', 'r', encoding='utf-8'))
+    >>> document = GenomeDiff.read("MyDiff.gd")
     >>> document.metadata
-    {'GENOME_DIFF': '1.0', 'AUTHOR': ''}
+    {'GENOME_DIFF': ['1.0'], 'AUTHOR': ['']}
     >>> document.mutations[0]
     Record('SNP', 1, [191], new_seq='A', seq_id='NC_000913', snp_type='intergenic',  position=12346)
     >>> document.mutations[0].parent_ids
     [191]
     >>> document[191]
     Record('RA', 191, None, tot_cov='46/42', new_base='A', insert_position=0, ref_base='G', seq_id='NC_000913', quality=252.9, position=12345)
-    >>> document.mutations[0].parents
+    >>> document.records.parents_of[0]
     [Record('RA', 191, None, tot_cov='46/42', new_base='A', insert_position=0, ref_base='G', seq_id='NC_000913', quality=252.9, position=12345)]
     >>> document.write(open('NewDiff.gd', 'w', encoding='utf-8'))
