@@ -1,5 +1,20 @@
-from unittest import TestCase, main
+# -*- coding: utf-8 -*-
+"""
+ * @Date: 2025-01-11 11:57:00
+ * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
+ * @LastEditTime: 2025-01-11 15:44:43
+ * @FilePath: /pymummer/tests/test_genomediff.py
+ * @Description:
+
+ test:
+    PYTHONPATH=. python tests/test_genomediff.py
+ or:
+    python -m pytest
+"""
+# """
+
 from io import StringIO
+from unittest import TestCase, main
 
 from genomediff import GenomeDiff
 from genomediff.parser import GenomeDiffParser, Metadata
