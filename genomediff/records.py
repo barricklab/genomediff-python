@@ -2,7 +2,7 @@
 """
  * @Date: 2024-12-27 17:50:21
  * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-01-10 22:23:34
+ * @LastEditTime: 2025-01-11 15:21:04
  * @FilePath: /pymummer/genomediff/records.py
  * @Description:
 """
@@ -16,9 +16,6 @@ from typing import Final, Iterable, Literal, NamedTuple
 from git import TYPE_CHECKING
 
 STRAND_MAPPING_PATTERN: Final = re.compile(r"^(\d+)/(\d+)$")
-CONDITION_PATTERN = re.compile(
-    r"^(?P<key>[_a-z]+)" "(?P<comp>==|!=|<|<=|>|>=)" "(?P<val>[-_a-zA-Z0-9\.]+)"
-)
 
 
 class ReadEvidenceStrand(NamedTuple):
@@ -49,6 +46,56 @@ class DataMeta(type):
         super().__init__(name, bases, attrs)
         if attrs.get("DataItem", NotImplemented) != NotImplemented:
             cls.types[name] = bases[0].type_class
+
+
+class Condition:
+    class Comp(Enum):
+        EQ = "=="
+        NE = "!="
+        LT = "<"
+        LE = "<="
+        GT = ">"
+        GE = ">="
+
+        def __repr__(self):
+            return f"__{self.name.lower()}__"
+
+        @classmethod
+        def PATTERN(cls):
+            return "|".join((i.value for i in cls.__members__.values()))
+
+    def __init__(self, comp: Comp, val, default_key=""):
+        self.key = default_key
+        self.comp = comp
+        self.val = val
+
+    def __str__(self):
+        return f"{self.key}{self.comp.value}{self.val}"
+
+    CONDITION_PATTERN = re.compile(
+        r"^(?P<key>([_a-z]+)?)\s*(?P<comp>"
+        + Comp.PATTERN()
+        + r")\s*(?P<val>[-_a-zA-Z0-9\.]+)"
+    )
+
+    @classmethod
+    def parse(cls, condition: str):
+        condition_match = cls.CONDITION_PATTERN.match(condition)
+        if not condition_match:
+            cond_key = ""
+            cond_comp = "=="
+            cond_val = condition
+        else:
+            cond_key = condition_match.group("key")
+            cond_comp = condition_match.group("comp")
+            cond_val = condition_match.group("val")
+        return cls(cls.Comp(cond_comp), _convert_value(cond_val), cond_key)
+
+    def __call__(self, val) -> bool:
+        return getattr(val, repr(self.comp))(self.val)
+
+    def check_attr(self, val) -> bool:
+        return self(getattr(val, self.key))
 
 
 class DataAbstract(metaclass=DataMeta):
@@ -151,39 +198,28 @@ class DataAbstract(metaclass=DataMeta):
         if isinstance(other, self.__class__):
             return self <= other and self != other
 
-    def satisfies(self, *args: str):
+    def satisfy(self, *conds: str | Condition, **kconds: str | Condition):
         """
         Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
         Output: return true if all conditions are true (i.e. correspond to key-values in attributes.
 
         Find a condition that evaluates to false, otherwise return True.
         """
-
-        ## helper function to check if values are numbers
-        def is_number(s):
+        for condi in conds:
+            cond = condi if isinstance(condi, Condition) else Condition.parse(condi)
             try:
-                float(s)
-                return True
-            except ValueError:
-                return False
-
-        for c in args:
-            condition_match = CONDITION_PATTERN.match(c)
-            assert condition_match, (
-                "the supplied condition\n" + c + "\n could not be parsed."
-            )
-            cond_key = condition_match.group("key")
-            cond_comp = condition_match.group("comp")
-            cond_val = condition_match.group("val")
-
-            if cond_key in self.DataItem._fields:
-                attribute_val = getattr(self.dataitem, cond_key)
-            elif cond_key in self.extra:
-                attribute_val = self.extra[cond_key]
-            else:
+                attribute_val = getattr(self, cond.key)
+            except AttributeError:
                 continue
-
-            if not eval(f"'{attribute_val}' {cond_comp} '{cond_val}'"):
+            if not cond(attribute_val):
+                return False
+        for key, condi in kconds.items():
+            cond = condi if isinstance(condi, Condition) else Condition.parse(condi)
+            try:
+                attribute_val = getattr(self, key)
+            except AttributeError:
+                continue
+            if not cond(attribute_val):
                 return False
         return True
 
@@ -506,7 +542,12 @@ class RecordCollection:
     def __iter__(self):
         return (i for j in (self.mutation, self.evidence, self.validation) for i in j)
 
-    def remove(self, *args: str, mut_type=None | str):
+    def remove(
+        self,
+        *conds: str | Condition,
+        mut_type=RecordEnum | None | str,
+        **kconds: str | Condition,
+    ):
         """
         Remove mutations that satisfy the given conditions. Implementation of
         gdtools REMOVE for genomediff objects.
@@ -516,16 +557,37 @@ class RecordCollection:
         Output: self.mutations is updated, with mutations satifying the conditions
                 having been removed.
         """
-        if mut_type is None:
-            for mut_type in DATA2RECORD["mutation"]:
-                self.remove(*args, mut_type=mut_type)
-        else:
+        if isinstance(mut_type, RecordEnum):
             rec: DataMutationAbs
-            assert mut_type in DATA2RECORD["mutation"]
             updated_mutations = []
-            for rec in getattr(self, mut_type):
-                if rec.satisfies(*args):
-                    self.unindex.setdefault(rec.id, []).append(self.index.pop(rec.id))
+            for rec in getattr(self, mut_type.name):
+                if rec.satisfy(*conds, **kconds):
+                    if (_rec := self.index.pop(rec.id, None)) is not None:
+                        self.unindex.setdefault(rec.id, []).append(_rec)
                 else:
                     updated_mutations.append(rec)
-            setattr(self, mut_type, updated_mutations)
+            setattr(self, mut_type.name, updated_mutations)
+        elif mut_type is None:
+            for mut_type in DATA2RECORD["mutation"]:
+                self.remove(*conds, mut_type=RecordEnum[mut_type], **kconds)
+        else:
+            mut_type = RecordEnum[mut_type]
+            self.remove(*conds, mut_type=mut_type, **kconds)
+
+    def query(
+        self,
+        *conds: str | Condition,
+        mut_type: RecordEnum | None | str = None,
+        **kconds: str | Condition,
+    ):
+        if isinstance(mut_type, RecordEnum):
+            rec: DataMutationAbs
+            for rec in getattr(self, mut_type.name):
+                if rec.satisfy(*conds, **kconds):
+                    yield rec
+        elif mut_type is None:
+            for mut_type in DATA2RECORD["mutation"]:
+                yield from self.query(*conds, mut_type=RecordEnum[mut_type], **kconds)
+        else:
+            mut_type = RecordEnum[mut_type]
+            yield from self.query(*conds, mut_type=mut_type, **kconds)

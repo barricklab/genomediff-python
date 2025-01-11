@@ -72,7 +72,7 @@ class GenomeDiffTestCase(TestCase):
         document = GenomeDiff.read(file)
 
         # fmt: off
-        self.assertEqual({'AUTHOR': ['test'], 'GENOME_DIFF': ['1.0']}, document.metadata)
+        self.assertEqual({'AUTHOR': ['test'], 'GENOME_DIFF': ['1.0']}, document.metadata._dict)
 
         snp_record = Record('SNP', 1, [23423], seq_id='NC_000913', new_seq='A', position=223)
         ra_record = Record('RA', 2, None, position=223, seq_id='NC_000913', insert_position=0, new_base='A',
@@ -83,6 +83,41 @@ class GenomeDiffTestCase(TestCase):
         self.assertEqual([ra_record], document.evidence)
         self.assertEqual(snp_record, document[1])
         self.assertEqual(ra_record, document[2])
+
+    def test_query(self):
+        file = StringIO(
+            "\n".join(
+                [
+                    "#=GENOME_DIFF\t1.0",
+                    "#=AUTHOR test",
+                    "SNP\t1\t23423\tNC_000913\t223\tA",
+                    "RA\t2\t\tNC_000913\t223\t0\tG\tA",
+                ]
+            )
+        )
+        document = GenomeDiff.read(file)
+
+        snp_record = Record(
+            "SNP", 1, [23423], seq_id="NC_000913", new_seq="A", position=223
+        )
+        ra_record = Record(
+            "RA",
+            2,
+            None,
+            position=223,
+            seq_id="NC_000913",
+            insert_position=0,
+            new_base="A",
+            ref_base="G",
+        )
+
+        self.assertEqual([snp_record], list(document.records.query(type="SNP")))
+        self.assertEqual([snp_record], list(document.records.query(mut_type="SNP")))
+        self.assertEqual([snp_record], list(document.records.query(type="==SNP")))
+        self.assertEqual([snp_record], list(document.records.query("type==SNP")))
+        self.assertEqual(
+            [ra_record], list(document.records.query("position>0", mut_type="RA"))
+        )
 
 
 class RecordTestCase(TestCase):
