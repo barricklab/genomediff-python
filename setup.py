@@ -2,12 +2,12 @@ from distutils.core import setup
 
 setup(
     name='genomediff',
-    version='0.3.2',
+    version='0.4.0',
     packages=['genomediff'],
-    url='https://github.com/biosustain/genomediff-python.git',
+    url='https://github.com/barricklab/genomediff-python.git',
     license='MIT',
-    author='Lars Schoening',
-    author_email='lays@biosustain.dtu.dk',
+    author='Jeffrey Barrick, Lars Schoening',
+    author_email='jeffrey.e.barrick@gmail.com, lays@biosustain.dtu.dk',
     description='GenomeDiff (*.gd) file reader',
     classifiers=[
         'Development Status :: 3 - Alpha',
