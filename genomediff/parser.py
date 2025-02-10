@@ -20,10 +20,10 @@ class GenomeDiffParser(object):
         return value
 
     def __iter__(self):
-        metadata_pattern = re.compile(r'^#=(\w+)\s+(.*)$')
+        metadata_pattern = re.compile(r'^#=(\w+)\\s+(.*)$')
         mutation_pattern = re.compile(r'^(?P<type>[A-Z]{2,4})'
-                                      '\t(?P<id>\d+)'
-                                      '\t((?P<parent_ids>\d+(,\s*\d+)*)|\.?)'
+                                      '\t(?P<id>\\d+)'
+                                      '\t((?P<parent_ids>\\d+(,\\s*\\d+)*)|\\.?)'
                                       '\t(?P<extra>.+)?$')
 
         for i, line in enumerate(self._fsock):
