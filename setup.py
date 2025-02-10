@@ -6,8 +6,8 @@ setup(
     packages=['genomediff'],
     url='https://github.com/barricklab/genomediff-python.git',
     license='MIT',
-    author='Jeffrey Barrick, Lars Schoening',
-    author_email='jeffrey.e.barrick@gmail.com, lays@biosustain.dtu.dk',
+    author='Jeffrey Barrick',
+    author_email='jeffrey.e.barrick@gmail.com',
     description='GenomeDiff (*.gd) file reader',
     classifiers=[
         'Development Status :: 3 - Alpha',
