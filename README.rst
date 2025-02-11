@@ -12,7 +12,7 @@ Installation
 
 ::
 
-    python setup.py install
+    python -m pip install .
 
 
 Only Python 3.x is tested.
