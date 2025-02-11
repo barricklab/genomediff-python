@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "genomediff"
+version = "0.4.0"
+authors = [
+    {name = "Jeffrey Barrick", email = "jeffrey.e.barrick@gmail.com"},
+]
+description = "GenomeDiff (*.gd) file reader"
+readme = "README.rst"
+requires-python = ">=3.0"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Other Environment",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+]
+
+[project.urls]
+Homepage = "https://github.com/barricklab/genomediff-python"
+Repository = "https://github.com/barricklab/genomediff-python.git"
+Issues = "https://github.com/barricklab/genomediff-python/issues"
+
+
+[tool.setuptools]
+include-package-data = false

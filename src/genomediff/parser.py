@@ -20,7 +20,7 @@ class GenomeDiffParser(object):
         return value
 
     def __iter__(self):
-        metadata_pattern = re.compile(r'^#=(\w+)\\s+(.*)$')
+        metadata_pattern = re.compile(r'^\#\=(\w+)\s+(.*)$')
         mutation_pattern = re.compile(r'^(?P<type>[A-Z]{2,4})'
                                       '\t(?P<id>\\d+)'
                                       '\t((?P<parent_ids>\\d+(,\\s*\\d+)*)|\\.?)'
@@ -30,8 +30,11 @@ class GenomeDiffParser(object):
             if not line:
                 continue
             elif line.startswith('#'):
+                print(line)
                 match = metadata_pattern.match(line)
+                print("nomatch")
                 if match:
+                    print("matched")
                     yield Metadata(*match.group(1, 2))
             else:
                 match = mutation_pattern.match(line)

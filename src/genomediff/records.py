@@ -89,7 +89,7 @@ class Record(object):
         remaining_items = self.attributes.copy()
         type_fields_key_list = TYPE_SPECIFIC_FIELDS[self.type]
         type_fields_list = []
-        for type_field_key in type_fields_key_list:
+        for type_field_key in sorted(type_fields_key_list):
           type_fields_list.append(str(self.attributes[type_field_key]))
           del remaining_items[type_field_key]
         type_fields_str = '\t'.join(type_fields_list)
@@ -132,7 +132,7 @@ class Record(object):
             assert type(c) == str, "error: supplied condition is not a string."
             condition_pattern = re.compile(r'^(?P<key>[_a-z]+)'
                                             '(?P<comp>==|!=|<|<=|>|>=)'
-                                            '(?P<val>[-_a-zA-Z0-9\.]+)')
+                                            '(?P<val>[-_a-zA-Z0-9\\.]+)')
             condition_match = condition_pattern.match(c)
             assert condition_match, "the supplied condition\n"+c+"\n could not be parsed."
             cond_key = condition_match.group('key')
