@@ -7,7 +7,7 @@ where = ["src"]
 
 [project]
 name = "genomediff"
-version = "0.4.0"
+version = "0.4.1"
 authors = [
     {name = "Jeffrey Barrick", email = "jeffrey.e.barrick@gmail.com"},
 ]

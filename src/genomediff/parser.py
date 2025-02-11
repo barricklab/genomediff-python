@@ -30,11 +30,8 @@ class GenomeDiffParser(object):
             if not line:
                 continue
             elif line.startswith('#'):
-                print(line)
                 match = metadata_pattern.match(line)
-                print("nomatch")
                 if match:
-                    print("matched")
                     yield Metadata(*match.group(1, 2))
             else:
                 match = mutation_pattern.match(line)
