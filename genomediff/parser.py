@@ -146,6 +146,23 @@ class MetadataContainer:
     def set(self, name: str, value: str):
         self._dict.setdefault(name, []).append(value)
 
+    @classmethod
+    def from_dict(cls, d: dict[str, str | list]):
+        self = cls("")
+        for k, v in d.items():
+            if isinstance(v, list):
+                for i in v:
+                    self.set(k, str(i))
+            else:
+                self.set(k, str(v))
+        return self
+
+    def __eq__(self, value):
+        if isinstance(value, MetadataContainer):
+            return dict(self._dict) == dict(value._dict)
+        if isinstance(value, dict):
+            return self == self.from_dict(value)
+
 
 def read_line(line: str):
     if line.startswith("#"):

@@ -2,7 +2,7 @@
 """
  * @Date: 2024-12-27 17:50:21
  * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-01-11 15:21:04
+ * @LastEditTime: 2025-02-12 11:18:18
  * @FilePath: /pymummer/genomediff/records.py
  * @Description:
 """
@@ -11,9 +11,7 @@
 import re
 from collections import OrderedDict
 from enum import Enum
-from typing import Final, Iterable, Literal, NamedTuple
-
-from git import TYPE_CHECKING
+from typing import Final, Iterable, Literal, NamedTuple, TYPE_CHECKING
 
 STRAND_MAPPING_PATTERN: Final = re.compile(r"^(\d+)/(\d+)$")
 
@@ -101,7 +99,7 @@ class Condition:
 class DataAbstract(metaclass=DataMeta):
     type_class: str = NotImplemented
 
-    def __init__(self, evidence_id: str, parent_ids: str, extra: str):
+    def __init__(self, evidence_id: str, parent_ids: str, extra: str, document=None):
         """Data lines describe either a mutation or evidence from an analysis that can potentially support a mutational event. Data fields are tab-delimited. Each line begins with several fields containing information common to all types, continues with a fixed number of type-specific fields, and ends with an arbitrary number of name=value pairs that store optional information.
 
         1. **type** *<string>*
@@ -127,6 +125,7 @@ class DataAbstract(metaclass=DataMeta):
             else []
         )
         self.parse_extra(extra)
+        self.document = document
 
     DataItem = NotImplemented
 
@@ -153,6 +152,14 @@ class DataAbstract(metaclass=DataMeta):
     def id(self):
         """alias"""
         return self.evidence_id
+
+    @property
+    def parents(self):
+        from . import GenomeDiff
+
+        if isinstance(self.document, GenomeDiff):
+            return [self.document[pid] for pid in self.parent_ids]
+        return []
 
     def __getattr__(self, item):
         if item in self.dataitem._fields:
@@ -442,6 +449,7 @@ class RecordEnum(Enum):
         cls,
         record_type: str,
         evidence_id: str | int,
+        document=None,
         parent_ids: str | list[int] | None = ".",
         **kwargs,
     ):
@@ -452,7 +460,9 @@ class RecordEnum(Enum):
         extra = "\t".join(
             f"{k}={v}" for k, v in kwargs.items() if k not in RE.DataItem._fields
         )
-        return cls[record_type].value(evidence_id, parent_ids or "", f"{pre}\t{extra}")
+        return cls[record_type].value(
+            evidence_id, parent_ids or "", f"{pre}\t{extra}", document=document
+        )
 
 
 Record = RecordEnum.parse

@@ -2,7 +2,7 @@
 """
  * @Date: 2024-12-27 17:48:21
  * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-01-10 22:02:13
+ * @LastEditTime: 2025-02-12 11:21:55
  * @FilePath: /pymummer/genomediff/__init__.py
  * @Description:
  modified from https://github.com/biosustain/genomediff-python
@@ -44,16 +44,18 @@ class GenomeDiff:
         else:
             metadata = MetadataContainer(gdfile)
             fsock = open(gdfile, "r")
+        self = cls(metadata, records, comments)
         for i, record in parse(fsock):
             if isinstance(record, Metadata):
                 metadata.set(record.name, record.value)
             elif isinstance(record, str):
                 comments[i] = record
             else:
+                record.document = self
                 records.set(record)
         if not hasattr(gdfile, "read"):
             fsock.close()
-        return cls(metadata, records, comments)
+        return self
 
     def write(self, fsock):
         for l in self.metadata.lines:
