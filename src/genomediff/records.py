@@ -195,7 +195,7 @@ class DataAbstract(metaclass=DataMeta):
         if isinstance(other, self.__class__):
             return self <= other and self != other
 
-    def satisfy(self, *conds: str | Condition, **kconds: str | Condition):
+    def satisfy(self, *conds: "str|Condition", **kconds: "str|Condition"):
         """
         Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
         Output: return true if all conditions are true (i.e. correspond to key-values in attributes.
@@ -438,9 +438,9 @@ class RecordEnum(Enum):
     def parse(
         cls,
         record_type: str,
-        evidence_id: str | int,
+        evidence_id: "str|int",
         document=None,
-        parent_ids: str | list[int] | None = ".",
+        parent_ids: "str|list[int]|None" = ".",
         **kwargs,
     ):
         if isinstance(parent_ids, list):
@@ -488,7 +488,7 @@ class RecordCollection:
         self.PFGE: list[PFGE] = []
         self.NOTE: list[NOTE] = []
 
-        self.index: dict[str | int | float, DataAbstract] = {}
+        self.index: dict["str|int|float", DataAbstract] = {}
         self.unindex: dict[str, list[DataAbstract]] = {}
 
     @classmethod
@@ -505,7 +505,7 @@ class RecordCollection:
         else:
             self.index[record.id] = record
 
-    def parents_of(self, record: DataAbstract | str | float | str):
+    def parents_of(self, record: "DataAbstract|str|float|str"):
         if not isinstance(record, DataAbstract):
             record = self[record]
             assert isinstance(record, DataAbstract)
@@ -544,9 +544,9 @@ class RecordCollection:
 
     def remove(
         self,
-        *conds: str | Condition,
-        mut_type=RecordEnum | None | str,
-        **kconds: str | Condition,
+        *conds: "str|Condition",
+        mut_type: "RecordEnum|None|str" = None,
+        **kconds: "str|Condition",
     ):
         """
         Remove mutations that satisfy the given conditions. Implementation of
@@ -576,9 +576,9 @@ class RecordCollection:
 
     def query(
         self,
-        *conds: str | Condition,
-        mut_type: RecordEnum | None | str = None,
-        **kconds: str | Condition,
+        *conds: "str|Condition",
+        mut_type: "RecordEnum|None|str" = None,
+        **kconds: "str|Condition",
     ):
         if isinstance(mut_type, RecordEnum):
             rec: DataMutationAbs

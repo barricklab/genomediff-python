@@ -35,7 +35,7 @@ class MetadataContainer:
     Some of these metadata fields are used to name and sort samples by |gdtools| COMPARE, to find relevant files by |gdtools| RUNFILE, and by other utilities.
     """
 
-    def __init__(self, file_path: str | Path):
+    def __init__(self, file_path: "str|Path"):
         self._dict: OrderedDict[str, list[str]] = OrderedDict()
         self.file_path = Path(file_path)
 
@@ -147,7 +147,7 @@ class MetadataContainer:
         self._dict.setdefault(name, []).append(value)
 
     @classmethod
-    def from_dict(cls, d: dict[str, str | list]):
+    def from_dict(cls, d: dict[str, "str|list"]):
         self = cls("")
         for k, v in d.items():
             if isinstance(v, list):
@@ -203,7 +203,7 @@ def GenomeDiffParser(fsock: Iterable[str]):
 
 
 def load_json_ref_cov(
-    breseq_output_dir: Path | str, relative_file: str = "output/summary.json"
+    breseq_output_dir: "str|Path", relative_file: str = "output/summary.json"
 ):
     breseq_json = (
         (Path(breseq_output_dir) / relative_file)

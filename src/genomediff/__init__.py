@@ -11,7 +11,7 @@ class GenomeDiff:
         self,
         metadata: MetadataContainer,
         records: RecordCollection,
-        comments: dict[int, str] | None = None,
+        comments: "dict[int, str]|None" = None,
     ):
         self._metadata = metadata
         self._records = records
@@ -26,7 +26,7 @@ class GenomeDiff:
         return self._records
 
     @classmethod
-    def read(cls, gdfile: str | Path | TextIO):
+    def read(cls, gdfile: "str|Path|TextIO"):
         records = RecordCollection.new()
         comments: dict[int, str] = {}
         if hasattr(gdfile, "read"):
