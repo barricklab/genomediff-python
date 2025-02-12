@@ -74,7 +74,7 @@ class Condition:
         return self(getattr(val, self.key))
 
 
-class DataMeta(type):
+class RecordMeta(type):
     types: dict[str, str] = {}
 
     def __init__(cls, name, bases, attrs):
@@ -83,7 +83,7 @@ class DataMeta(type):
             cls.types[name] = bases[0].type_class
 
 
-class DataAbstract(metaclass=DataMeta):
+class _Record(metaclass=RecordMeta):
     type_class: str = NotImplemented
 
     def __init__(self, evidence_id: str, parent_ids: str, extra: str, document=None):
@@ -232,13 +232,13 @@ class DataAbstract(metaclass=DataMeta):
 
 
 # fmt: off
-class DataMutationAbs  (DataAbstract):
+class RecordMutation  (_Record):
     type_class = "mutation"
     def range(self):
         return range(self.dataitem.position, self.dataitem.position + self.dataitem.size)
 
-class DataEvidenceAbs  (DataAbstract): type_class = "evidence"
-class DataValidationAbs(DataAbstract): type_class = "validation"
+class RecordEvidence  (_Record): type_class = "evidence"
+class RecordValidation(_Record): type_class = "validation"
 # fmt: on
 
 if TYPE_CHECKING:
@@ -258,7 +258,7 @@ else:
 
 
 # fmt: off
-class SNP(DataMutationAbs):
+class SNP(RecordMutation):
     """Base substitution mutation
     - seq_id   id of reference sequence fragment containing mutation, evidence, or validation.
     - position position in reference sequence fragment of base to replace.
@@ -268,7 +268,7 @@ class SNP(DataMutationAbs):
     dataitem: DataItem
     def range(self): return range(self.dataitem.position, self.dataitem.position + 1)
     # SNP("1", "1", "1\t1\t1").dataitem.new_seq
-class SUB(DataMutationAbs):
+class SUB(RecordMutation):
     """Multiple base substitution mutation
     - seq_id
     - position position in reference sequence of the first base that will be replaced.
@@ -277,7 +277,7 @@ class SUB(DataMutationAbs):
     """
     class DataItem(NamedTuple): seq_id: str; position: int; size: int; new_seq: str
     dataitem: DataItem
-class DEL(DataMutationAbs):
+class DEL(RecordMutation):
     """Deletion mutation
     - seq_id
     - position position in reference sequence fragment of first deleted base.
@@ -292,7 +292,7 @@ class DEL(DataMutationAbs):
     """
     class DataItem(NamedTuple): seq_id: str; position: int; size: int
     dataitem: DataItem
-class INS(DataMutationAbs):
+class INS(RecordMutation):
     """Insertion mutation
     - seq_id
     - position position in reference sequence fragment. New bases are inserted *after* this position.
@@ -306,7 +306,7 @@ class INS(DataMutationAbs):
     class DataItem(NamedTuple): seq_id: str; position: int;            new_seq: str
     dataitem: DataItem
     def range(self): return range(self.dataitem.position, self.dataitem.position + 1)
-class MOB(DataMutationAbs):
+class MOB(RecordMutation):
     """Mobile element insertion mutation
     - seq_id
     - position         position in reference sequence fragment of the first duplicated base at the target site.
@@ -324,7 +324,7 @@ class MOB(DataMutationAbs):
     class DataItem(NamedTuple): seq_id: str; position: int;                         repeat_name: str; strand: SeqStrand; duplication_size: int
     dataitem: DataItem
     def range(self): raise NotImplementedError
-class AMP(DataMutationAbs):
+class AMP(RecordMutation):
     """Amplification mutation
     - seq_id
     - position         position in reference sequence fragment.
@@ -340,7 +340,7 @@ class AMP(DataMutationAbs):
     """
     class DataItem(NamedTuple): seq_id: str; position: int; size: int;              new_copy_number: int
     dataitem: DataItem
-class CON(DataMutationAbs):
+class CON(RecordMutation):
     """Gene conversion mutation
     - seq_id
     - position position in reference sequence fragment that was the target of gene conversion from another genomic location.
@@ -349,7 +349,7 @@ class CON(DataMutationAbs):
     """
     class DataItem(NamedTuple): seq_id: str; position: int; size: int;              region: str
     dataitem: DataItem
-class INV(DataMutationAbs):
+class INV(RecordMutation):
     """Inversion mutation
     - seq_id
     - position position in reference sequence fragment.
@@ -359,7 +359,7 @@ class INV(DataMutationAbs):
     dataitem: DataItem
 
 
-class RA(DataEvidenceAbs):
+class RA(RecordEvidence):
     """Read alignment evidence
     - seq_id
     - position        position in reference sequence fragment.
@@ -369,7 +369,7 @@ class RA(DataEvidenceAbs):
     """
     class DataItem(NamedTuple): seq_id: str; position: int;                         insert_position: int; ref_base: str; new_base: str
     dataitem: DataItem
-class MC(DataEvidenceAbs):
+class MC(RecordEvidence):
     """Missing coverage evidence
     - seq_id
     - start       start position in reference sequence fragment.
@@ -379,7 +379,7 @@ class MC(DataEvidenceAbs):
     """
     class DataItem(NamedTuple): seq_id: str; start: int; end: int;                  start_range: int; end_range: int
     dataitem: DataItem
-class JC(DataEvidenceAbs):
+class JC(RecordEvidence):
     """New junction evidence
     - side_1_seq_id   id of reference sequence fragment containing side 1 of the junction.
     - side_1_position position of side 1 at the junction boundary.
@@ -391,7 +391,7 @@ class JC(DataEvidenceAbs):
     """
     class DataItem(NamedTuple): side_1_seq_id: str; side_1_position: int; side_1_strand: SeqStrand; side_2_seq_id: str; side_2_position: int; side_2_strand: SeqStrand; overlap: int
     dataitem: DataItem
-class CN(DataEvidenceAbs):
+class CN(RecordEvidence):
     """Copy number variation evidence
     - seq_id
     - start       start position in reference sequence fragment.
@@ -400,7 +400,7 @@ class CN(DataEvidenceAbs):
     """
     class DataItem(NamedTuple): seq_id: str; start: int; end: int;                  copy_number: int
     dataitem: DataItem
-class UN(DataEvidenceAbs):
+class UN(RecordEvidence):
     """Unknown base evidence
     - seq_id
     - start  start position in reference sequence of region.
@@ -410,28 +410,28 @@ class UN(DataEvidenceAbs):
     dataitem: DataItem
 
 
-class CURA(DataValidationAbs):
+class CURA(RecordValidation):
     class DataItem(NamedTuple): expert: str
     dataitem: DataItem
-class FPOS(DataValidationAbs):
+class FPOS(RecordValidation):
     class DataItem(NamedTuple): expert: str
     dataitem: DataItem
-class PHYL(DataValidationAbs):
+class PHYL(RecordValidation):
     class DataItem(NamedTuple): gd: str
     dataitem: DataItem
-class TSEQ(DataValidationAbs):
+class TSEQ(RecordValidation):
     class DataItem(NamedTuple): seq_id: str; primer1_start: int; primer1_end: int; primer2_start: int; primer2_end: int
     dataitem: DataItem
-class PFLP(DataValidationAbs):
+class PFLP(RecordValidation):
     class DataItem(NamedTuple): seq_id: str; primer1_start: int; primer1_end: int; primer2_start: int; primer2_end: int
     dataitem: DataItem
-class RFLP(DataValidationAbs):
+class RFLP(RecordValidation):
     class DataItem(NamedTuple): seq_id: str; primer1_start: int; primer1_end: int; primer2_start: int; primer2_end: int; enzyme: str
     dataitem: DataItem
-class PFGE(DataValidationAbs):
+class PFGE(RecordValidation):
     class DataItem(NamedTuple): seq_id: str; restriction_enzyme: str
     dataitem: DataItem
-class NOTE(DataValidationAbs):
+class NOTE(RecordValidation):
     class DataItem(NamedTuple): note: str
     dataitem: DataItem
 
@@ -453,6 +453,11 @@ class RecordEnum(Enum):
         parent_ids: "str|list[int]|None" = ".",
         **kwargs,
     ):
+        """
+        Record("SNP", 1, parent_ids=[23423], new_seq="A", seq_id="NC_000913", position=223, gene_name="mhpE")
+         =>
+        SNP("1", "23423", "NC_000913\t223\tA\tgene_name=mhpE")
+        """
         if isinstance(parent_ids, list):
             parent_ids = ",".join(str(i) for i in parent_ids)
         RE = cls[record_type].value
@@ -460,16 +465,14 @@ class RecordEnum(Enum):
         extra = "\t".join(
             f"{k}={v}" for k, v in kwargs.items() if k not in RE.DataItem._fields
         )
-        return cls[record_type].value(
-            evidence_id, parent_ids or "", f"{pre}\t{extra}", document=document
-        )
+        return RE(evidence_id, parent_ids or "", f"{pre}\t{extra}", document=document)
 
 
 Record = RecordEnum.parse
 
 
 DATA2RECORD: dict[str, list[str]] = {}
-for rtype, dtype in DataMeta.types.items():
+for rtype, dtype in RecordMeta.types.items():
     DATA2RECORD.setdefault(dtype, []).append(rtype)
 del rtype, dtype
 
@@ -498,15 +501,15 @@ class RecordCollection:
         self.PFGE: list[PFGE] = []
         self.NOTE: list[NOTE] = []
 
-        self.index: dict["str|int|float", DataAbstract] = {}
-        self.unindex: dict[str, list[DataAbstract]] = {}
+        self.index: dict["str|int|float", _Record] = {}
+        self.unindex: dict[str, list[_Record]] = {}
 
     @classmethod
     def new(cls):
         return cls()  # type: ignore
 
-    def set(self, record: DataAbstract):
-        assert record.type in DataMeta.types
+    def set(self, record: _Record):
+        assert record.type in RecordMeta.types
         getattr(self, record.type).append(record)
         if record.id in self.index:
             self.unindex.setdefault(record.id, []).append(self.index[record.id])
@@ -515,10 +518,10 @@ class RecordCollection:
         else:
             self.index[record.id] = record
 
-    def parents_of(self, record: "DataAbstract|str|float|str"):
-        if not isinstance(record, DataAbstract):
+    def parents_of(self, record: "_Record|str|float|str"):
+        if not isinstance(record, _Record):
             record = self[record]
-            assert isinstance(record, DataAbstract)
+            assert isinstance(record, _Record)
         valid_pids = [
             pid for pid in record.parent_ids if _convert_value(record.id) is not None
         ]
@@ -528,15 +531,15 @@ class RecordCollection:
         ]
 
     @property
-    def mutation(self) -> Iterable[DataMutationAbs]:
+    def mutation(self) -> Iterable[RecordMutation]:
         return (i for rtype in DATA2RECORD["mutation"] for i in getattr(self, rtype))
 
     @property
-    def evidence(self) -> Iterable[DataEvidenceAbs]:
+    def evidence(self) -> Iterable[RecordEvidence]:
         return (i for rtype in DATA2RECORD["evidence"] for i in getattr(self, rtype))
 
     @property
-    def validation(self) -> Iterable[DataValidationAbs]:
+    def validation(self) -> Iterable[RecordValidation]:
         return (i for rtype in DATA2RECORD["validation"] for i in getattr(self, rtype))
 
     def __getitem__(self, item):
@@ -547,7 +550,7 @@ class RecordCollection:
         return self.index[item]
 
     def __len__(self):
-        return sum(len(getattr(self, rtype)) for rtype in DataMeta.types)
+        return sum(len(getattr(self, rtype)) for rtype in RecordMeta.types)
 
     def __iter__(self):
         return (i for j in (self.mutation, self.evidence, self.validation) for i in j)
@@ -580,7 +583,7 @@ class RecordCollection:
                 having been removed.
         """
         if isinstance(mut_type, RecordEnum):
-            rec: DataMutationAbs
+            rec: RecordMutation
             updated_mutations = []
             for rec in getattr(self, mut_type.name):
                 if rec.satisfy(*conds, **kconds):
@@ -603,7 +606,7 @@ class RecordCollection:
         **kconds: "str|Condition",
     ):
         if isinstance(mut_type, RecordEnum):
-            rec: DataMutationAbs
+            rec: RecordMutation
             for rec in getattr(self, mut_type.name):
                 if rec.satisfy(*conds, **kconds):
                     yield rec
