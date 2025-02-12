@@ -6,8 +6,6 @@ from time import strptime
 from typing import Final, Iterable, NamedTuple
 from warnings import warn
 
-import pandas as pd
-
 from .records import RecordEnum
 
 METADATA_PATTERN: Final = re.compile(r"^\#\=([^\s]+)\s+(.*)$")
@@ -205,6 +203,8 @@ def GenomeDiffParser(fsock: Iterable[str]):
 def load_json_ref_cov(
     breseq_output_dir: "str|Path", relative_file: str = "output/summary.json"
 ):
+    import pandas as pd
+
     breseq_json = (
         (Path(breseq_output_dir) / relative_file)
         if relative_file

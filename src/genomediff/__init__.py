@@ -49,8 +49,10 @@ class GenomeDiff:
         return self
 
     def write(self, fsock):
+        print("#=GENOME_DIFF\t1.0", file=fsock)
         for l in self.metadata.lines:
-            print(l, file=fsock)
+            if l.name != "GENOME_DIFF":
+                print(l, file=fsock)
         for record in self.records:
             print(str(record), file=fsock)
 

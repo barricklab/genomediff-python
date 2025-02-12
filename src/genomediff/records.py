@@ -27,23 +27,11 @@ def _convert_value(value: str):
     return value
 
 
-class DataMeta(type):
-    types: dict[str, str] = {}
-
-    def __init__(cls, name, bases, attrs):
-        super().__init__(name, bases, attrs)
-        if attrs.get("DataItem", NotImplemented) != NotImplemented:
-            cls.types[name] = bases[0].type_class
-
-
 class Condition:
     class Comp(Enum):
-        EQ = "=="
-        NE = "!="
-        LT = "<"
-        LE = "<="
-        GT = ">"
-        GE = ">="
+        # fmt: off
+        EQ = "=="; NE = "!="; LT = "<"; LE = "<="; GT = ">"; GE = ">="
+        # fmt: on
 
         def __repr__(self):
             return f"__{self.name.lower()}__"
@@ -84,6 +72,15 @@ class Condition:
 
     def check_attr(self, val) -> bool:
         return self(getattr(val, self.key))
+
+
+class DataMeta(type):
+    types: dict[str, str] = {}
+
+    def __init__(cls, name, bases, attrs):
+        super().__init__(name, bases, attrs)
+        if attrs.get("DataItem", NotImplemented) != NotImplemented:
+            cls.types[name] = bases[0].type_class
 
 
 class DataAbstract(metaclass=DataMeta):
@@ -156,7 +153,20 @@ class DataAbstract(metaclass=DataMeta):
             return self.dataitem.__getattribute__(item)
         return self.extra[item]
 
+    @property
+    def attributes(self) -> dict:
+        dataitem = OrderedDict(zip(self.dataitem._fields, self.dataitem))
+        return dataitem | self.extra
+
     def __repr__(self):
+        return "Record('{}', {}, {}, {})".format(
+            self.type,
+            self.id,
+            self.parent_ids,
+            ", ".join(f"{k}={repr(v)}" for k, v in self.attributes.items()),
+        )
+
+    def __str__(self):
         return "\t".join(
             [
                 self.type,
@@ -168,7 +178,7 @@ class DataAbstract(metaclass=DataMeta):
         )
 
     def to_dict(self) -> dict:
-        return {"type": self.type, "id": self.id} | self.dataitem._asdict() | self.extra
+        return {"type": self.type, "id": self.id} | self.attributes
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -541,6 +551,18 @@ class RecordCollection:
 
     def __iter__(self):
         return (i for j in (self.mutation, self.evidence, self.validation) for i in j)
+
+    def __str__(self):
+        return "\n".join(
+            [
+                "MUTATION:",
+                "\n".join([str(x) for x in self.mutation]),
+                "EVIDENCE:",
+                "\n".join([str(x) for x in self.evidence]),
+                "VALIDATION:",
+                "\n".join([str(x) for x in self.validation]),
+            ]
+        )
 
     def remove(
         self,

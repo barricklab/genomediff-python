@@ -29,4 +29,4 @@ jobs:
         shell: bash -el {0}
         run: |
           python -m pytest -v --show-capture=stderr \
-            tests
+            tests.py
