@@ -2,7 +2,7 @@
 """
  * @Date: 2025-01-11 11:57:00
  * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-01-11 15:44:43
+ * @LastEditTime: 2025-02-12 11:33:41
  * @FilePath: /pymummer/tests/test_genomediff.py
  * @Description:
 
@@ -16,8 +16,8 @@
 from io import StringIO
 from unittest import TestCase, main
 
-from genomediff import GenomeDiff
-from genomediff.parser import GenomeDiffParser, Metadata
+from genomediff import Metadata, GenomeDiff
+from genomediff.parser import GenomeDiffParser
 from genomediff.records import Record
 
 
@@ -88,6 +88,7 @@ class GenomeDiffTestCase(TestCase):
 
         # fmt: off
         self.assertEqual({'AUTHOR': ['test'], 'GENOME_DIFF': ['1.0']}, document.metadata._dict)
+        self.assertEqual({'AUTHOR': 'test', 'GENOME_DIFF': '1.0'}, document.metadata)
 
         snp_record = Record('SNP', 1, [23423], seq_id='NC_000913', new_seq='A', position=223)
         ra_record = Record('RA', 2, None, position=223, seq_id='NC_000913', insert_position=0, new_base='A',
@@ -161,6 +162,7 @@ class ParentResolveTestCase(TestCase):
         )
         document = GenomeDiff.read(file)
         self.assertEqual(document.records.parents_of(1), [document[2]])
+        self.assertEqual(document[1].parents, [document[2]])
 
 
 class RecordComparisonTestCase(TestCase):
