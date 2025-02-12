@@ -1,0 +1,44 @@
+# Codespell configuration is within pyproject.toml
+---
+name: Codespell
+
+on: [push]
+#on:
+#  push:
+#    branches: [main]
+#  pull_request:
+#    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  codespell:
+    name: Check for spelling errors
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Codespell
+        uses: codespell-project/actions-codespell@v2
+        with:
+          ignore_words_list: Crate,crate,fo,tre
+
+  formatting:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      pull-requests: write # for marocchino/sticky-pull-request-comment to create or update PR comment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-name: black
+          create-args: -c bioconda -c conda-forge black
+          cache-environment: false
+
+      - name: Check formatting
+        shell: bash -el {0}
+        run: black --check --diff .

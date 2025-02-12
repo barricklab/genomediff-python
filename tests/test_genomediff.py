@@ -2,7 +2,7 @@
 """
  * @Date: 2025-01-11 11:57:00
  * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-02-12 11:33:41
+ * @LastEditTime: 2025-02-12 11:36:43
  * @FilePath: /pymummer/tests/test_genomediff.py
  * @Description:
 
@@ -36,14 +36,14 @@ class ParserTestCase(TestCase):
         p = GenomeDiffParser(fsock=file)
         # fmt: off
 
-        self.assertEqual([
-                             Metadata('GENOME_DIFF', '1.0'),
-                             Metadata('AUTHOR', 'test'),
-                             Record('SNP', 1, parent_ids=[23423], new_seq='A', seq_id='NC_000913', position=223, gene_name='mhpE'),
-                             Record('RA', 2, new_base='A', frequency=0.1366, position=223, seq_id='NC_000913',
-                                    insert_position=0,
-                                    ref_base='G')],
-                         list(p)
+        self.assertEqual(
+            [
+                Metadata("GENOME_DIFF", "1.0"),
+                Metadata("AUTHOR", "test"),
+                Record("SNP", 1, parent_ids=[23423], new_seq="A", seq_id="NC_000913", position=223, gene_name="mhpE"),
+                Record("RA", 2, new_base="A", frequency=0.1366, position=223, seq_id="NC_000913", insert_position=0, ref_base="G"),
+            ],
+            list(p),
         )
         # fmt: on
 
@@ -60,14 +60,14 @@ class ParserTestCase(TestCase):
         )
         p = GenomeDiffParser(fsock=file)
         # fmt: off
-        self.assertEqual([
-                             Metadata('GENOME_DIFF', '1.0'),
-                             Metadata('AUTHOR', 'test'),
-                             Record('SNP', 1, parent_ids=[23423], new_seq='A', seq_id='NC_000913', position=223, gene_name='mhpE'),
-                             Record('RA', 2, new_base='A', frequency=0.1366, position=223, seq_id='NC_000913',
-                                    insert_position=0,
-                                    ref_base='G')],
-                         list(p)
+        self.assertEqual(
+            [
+                Metadata('GENOME_DIFF', '1.0'),
+                Metadata('AUTHOR', 'test'),
+                Record('SNP', 1, parent_ids=[23423], new_seq='A', seq_id='NC_000913', position=223, gene_name='mhpE'),
+                Record('RA', 2, new_base='A', frequency=0.1366, position=223, seq_id='NC_000913', insert_position=0, ref_base='G')
+            ],
+            list(p)
         )
         # fmt: on
 
@@ -91,8 +91,7 @@ class GenomeDiffTestCase(TestCase):
         self.assertEqual({'AUTHOR': 'test', 'GENOME_DIFF': '1.0'}, document.metadata)
 
         snp_record = Record('SNP', 1, [23423], seq_id='NC_000913', new_seq='A', position=223)
-        ra_record = Record('RA', 2, None, position=223, seq_id='NC_000913', insert_position=0, new_base='A',
-                           ref_base='G')
+        ra_record = Record('RA', 2, None, position=223, seq_id='NC_000913', insert_position=0, new_base='A', ref_base='G')
         # fmt: on
 
         self.assertEqual([snp_record], document.mutations)
