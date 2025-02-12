@@ -554,7 +554,7 @@ class RecordCollection:
 
         Input: a variable number of conditions, e.g. 'gene_name==rrlA','frequency>=0.9'.
                If mut_type is specified, only that mutation type will be removed.
-        Output: self.mutations is updated, with mutations satifying the conditions
+        Output: self.mutations is updated, with mutations satisfying the conditions
                 having been removed.
         """
         if isinstance(mut_type, RecordEnum):

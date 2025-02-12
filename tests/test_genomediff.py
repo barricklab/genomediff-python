@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
- * @Date: 2025-01-11 11:57:00
- * @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
- * @LastEditTime: 2025-02-12 11:36:43
- * @FilePath: /pymummer/tests/test_genomediff.py
- * @Description:
+* @Date: 2025-01-11 11:57:00
+* @LastEditors: hwrn hwrn.aou@sjtu.edu.cn
+* @LastEditTime: 2025-02-12 11:36:43
+* @FilePath: /pymummer/tests/test_genomediff.py
+* @Description:
 
- test:
-    PYTHONPATH=. python tests/test_genomediff.py
- or:
-    python -m pytest
+test:
+   PYTHONPATH=. python tests/test_genomediff.py
+or:
+   python -m pytest
 """
 # """
 
